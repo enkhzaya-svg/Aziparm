@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pharma Compliance Immersive Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        warmbg: '#FAF8F5',
+                        warmcard: '#F0ECE3',
+                        warmtext: '#201E1C',
+                        warmaccent: '#7D6E5D',
+                        warmlight: '#DFD8CE',
+                        warmdark: '#403B35',
+                        accentgreen: '#5E7D63',
+                        accentred: '#A85A5A'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF8F5;
+            color: #201E1C;
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        .conveyor-belt {
+            background: linear-gradient(90deg, #403B35 0%, #7D6E5D 50%, #403B35 100%);
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 6px;
+        }
+        .conveyor-lines {
+            width: 200%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 20px,
+                rgba(255, 255, 255, 0.15) 20px,
+                rgba(255, 255, 255, 0.15) 40px
+            );
+            animation: moveBelt 3s linear infinite;
+        }
+        .conveyor-lines.paused {
+            animation-play-state: paused;
+        }
+        @keyframes moveBelt {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .pill-bottle {
+            position: absolute;
+            bottom: 24px;
+            transition: transform 0.1s linear;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .active-tab-btn {
+            border-bottom: 3px solid #7D6E5D;
+            color: #403B35;
+            font-weight: 700;
+        }
+        .neon-border-red {
+            box-shadow: 0 0 10px #A85A5A;
+            border-color: #A85A5A;
+        }
+        .neon-border-green {
+            box-shadow: 0 0 10px #5E7D63;
+            border-color: #5E7D63;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Chosen Palette: Warm Neutrals with Gold and Olive Accents (Fostering a calm, sophisticated clinical/technological atmosphere) -->
+    <!-- Application Structure Plan: To maximize user engagement, this app transitions the theoretical report into a three-dimensional visual simulator. We have structured it into three main pillars: 
+         1. Interactive Factory Belt Simulator (to physically experience manual vs AI visual inspection limitations), 
+         2. Pharmacy Rx Smart HUD (demonstrating AI prescriptive safety filtering), 
+         3. Dynamic Analytics Dashboard & NLP Auditor (for policy document extraction). 
+         This direct interact-and-learn workflow ensures the compliance concepts are absorbed through active gameplay and visualization. -->
+    <!-- Visualization & Content Choices:
+         - Factory Belt Simulator -> Goal: Contrast manual inspection fatigue vs continuous AI visual evaluation -> Real-time HTML conveyor belt simulation with manual clicking vs AI automate toggle -> Proves how fast AI scales.
+         - Rx Smart HUD -> Goal: Compare pharmacy prescription drug interactions -> Live interactive patient profile analyzer with dynamic output fields -> Demonstrates immediate error prevention.
+         - Document Auditor -> Goal: Showcase Natural Language Processing in compliance documentation -> Interactive highlighted texts that explain legal deviations when clicked.
+         - Charting -> Goal: Synthesize throughput data -> Unified dynamic performance metrics bar chart (Chart.js) responding directly to simulator events. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Дээд цэс -->
+    <nav class="bg-warmcard/80 backdrop-blur-md sticky top-0 z-50 border-b border-warmlight/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl">🛡️</span>
+                    <span class="font-black text-xl text-warmdark tracking-tight">PHARMA <span class="text-warmaccent">AI</span> COMPLIANCE</span>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <button onclick="changeTab('factory')" class="nav-tab-btn active-tab-btn px-3 py-2 text-sm font-medium transition-all" id="btn-factory">🏭 Эмийн үйлдвэр</button>
+                    <button onclick="changeTab('pharmacy')" class="nav-tab-btn px-3 py-2 text-sm font-medium transition-all" id="btn-pharmacy">🏥 Ухаалаг Эмийн Сан</button>
+                    <button onclick="changeTab('auditor')" class="nav-tab-btn px-3 py-2 text-sm font-medium transition-all" id="btn-auditor">📄 NLP Баримт бичиг</button>
+                    <button onclick="changeTab('analytics')" class="nav-tab-btn px-3 py-2 text-sm font-medium transition-all" id="btn-analytics">📊 Ерөнхий Аналитик</button>
+                </div>
+                <div class="md:hidden">
+                    <select onchange="changeTab(this.value)" class="bg-warmcard border border-warmlight rounded px-2 py-1 text-xs text-warmdark">
+                        <option value="factory">🏭 Эмийн үйлдвэр</option>
+                        <option value="pharmacy">🏥 Ухаалаг Эмийн Сан</option>
+                        <option value="auditor">📄 NLP Баримт бичиг</option>
+                        <option value="analytics">📊 Ерөнхий Аналитик</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Үндсэн агуулга -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Сонгогдсон хэсэг 1: Эмийн Үйлдвэр (Conveyor belt simulator) -->
+        <section id="tab-factory" class="tab-content active space-y-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-warmlight/40">
+                <h2 class="text-2xl font-bold text-warmdark mb-2">Үйлдвэрлэлийн Дамжлага дахь Computer Vision (Ухаалаг Хараа)</h2>
+                <p class="text-warmtext leading-relaxed">
+                    Эмийн савлагааны явцад шошго зөрөх, таг дутуу хаагдах эсвэл тунгийн алдаа гарах зэрэг уламжлалт дамжлагад гардаг алдааг хиймэл оюуны тусламжтай илрүүлнэ. Доорх дамжлагын урсгал дээр өөрийн гараар зөрчилтэй эмийг товшсон хурд болон AI-ийн таних хурдыг шууд харьцуулан туршина уу.
+                </p>
+            </div>
+
+            <!-- Симуляторын интерфэйс -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-warmlight relative overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-accentred/20 text-accentred animate-pulse" id="sim-status">Идэвхгүй</span>
+                        <h3 class="text-lg font-bold text-warmdark">Үйлдвэрийн шугам: GMP Алдаа Илрүүлэгч v2.6</h3>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button id="btn-manual" onclick="startSim('manual')" class="px-4 py-2 bg-warmaccent hover:bg-warmdark text-white rounded-lg text-sm font-semibold transition-all">
+                            🧑‍💻 Гараар Хянах (Эхлэх)
+                        </button>
+                        <button id="btn-ai" onclick="startSim('ai')" class="px-4 py-2 bg-accentgreen hover:bg-opacity-90 text-white rounded-lg text-sm font-semibold transition-all">
+                            🤖 AI Камераар хянах
+                        </button>
+                        <button onclick="stopSim()" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-warmdark rounded-lg text-sm transition-all">
+                            Зогсоох
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Онооны самбар -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-warmbg p-3 rounded-xl border border-warmlight/60 text-center">
+                        <div class="text-xs text-warmaccent font-semibold uppercase">Дамжсан нийт эм</div>
+                        <div class="text-2xl font-black text-warmdark" id="score-total">0</div>
+                    </div>
+                    <div class="bg-warmbg p-3 rounded-xl border border-warmlight/60 text-center">
+                        <div class="text-xs text-warmaccent font-semibold uppercase">Нийт алдаатай эм</div>
+                        <div class="text-2xl font-black text-warmdark" id="score-defects">0</div>
+                    </div>
+                    <div class="bg-warmbg p-3 rounded-xl border border-warmlight/60 text-center">
+                        <div class="text-xs text-accentgreen font-semibold uppercase">Илрүүлсэн (Комплаенс)</div>
+                        <div class="text-2xl font-black text-accentgreen" id="score-caught">0</div>
+                    </div>
+                    <div class="bg-warmbg p-3 rounded-xl border border-warmlight/60 text-center">
+                        <div class="text-xs text-accentred font-semibold uppercase font-bold">Алдаж алдсан гологдол</div>
+                        <div class="text-2xl font-black text-accentred" id="score-missed">0</div>
+                    </div>
+                </div>
+
+                <!-- Дамжлага хэсэг -->
+                <div class="relative bg-warmcard/40 p-10 rounded-xl border border-warmlight/80 h-48 flex items-end">
+                    <div id="conveyor-track" class="w-full relative">
+                        <!-- Conveyor Belt Graphics -->
+                        <div class="conveyor-belt">
+                            <div class="conveyor-lines" id="belt-lines"></div>
+                        </div>
+                        <!-- Pill bottles container -->
+                        <div id="bottles-container" class="absolute inset-0 overflow-hidden" style="top: -60px; height: 100px;"></div>
+                    </div>
+
+                    <!-- AI Камер Сканнер Сүүдэр -->
+                    <div id="ai-scanner-line" class="hidden absolute top-0 bottom-0 w-1 bg-accentgreen/80 left-1/2 -translate-x-1/2" style="box-shadow: 0 0 15px #5E7D63;">
+                        <span class="absolute top-2 left-2 bg-accentgreen text-white text-[10px] px-1 rounded uppercase">AI Сканнер идэвхтэй</span>
+                    </div>
+                </div>
+
+                <!-- Зааварчилгаа -->
+                <div class="mt-4 p-4 bg-warmbg rounded-xl border border-warmlight text-xs text-warmtext flex justify-between items-center">
+                    <div>
+                        <strong>🕹️ Тоглох заавар:</strong> Гар горимд эхлүүлсний дараа дамжлагаар явах алдаатай эмийг (Улаан шошготой эсвэл хагархай/таггүй 🧪) амжиж ХУРДАН товшиж илрүүлнэ үү. AI горимд бүх шалгалтыг ухаалаг систем секундийн алдаагүй хийнэ.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Сонгогдсон хэсэг 2: Ухаалаг Эмийн Сан (Pharmacy HUD Simulator) -->
+        <section id="tab-pharmacy" class="tab-content space-y-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-warmlight/40">
+                <h2 class="text-2xl font-bold text-warmdark mb-2">Эмийн Сангийн Ухаалаг HUD & Жорын Хяналт</h2>
+                <p class="text-warmtext leading-relaxed">
+                    Эмийн санчдад зориулсан AI комплаенс туслах нь цахим жоронд дүн шинжилгээ хийж, өвчтөний түүхтэй тааруулан харшлах найрлага, хэтэрсэн тун, насанд тохирохгүй эмийн хэрэглээг шууд илрүүлэн урьдчилан сэргийлнэ. Доорх хэсэгт янз бүрийн жорыг "AI Scanner" руу илгээж, систем зөрчлийг хэрхэн илрүүлэхийг ажиглаарай.
+                </p>
+            </div>
+
+            <!-- ИНТЕРАКТИВ HUD -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Зүүн тал: Жоруудын жагсаалт -->
+                <div class="lg:col-span-4 space-y-4">
+                    <h3 class="text-md font-bold text-warmdark uppercase tracking-wider">Ирсэн Цахим Жорууд</h3>
+                    
+                    <div onclick="selectPrescription(1)" id="rx-1" class="rx-card p-4 bg-white hover:bg-warmcard/40 rounded-xl border-2 border-warmlight cursor-pointer transition-all">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-warmaccent text-white">Жор #8409</span>
+                            <span class="text-xs text-warmtext">5 минутын өмнө</span>
+                        </div>
+                        <h4 class="font-bold text-warmdark">Өвчтөн: Бат-Эрдэнэ (32 нас)</h4>
+                        <p class="text-xs text-warmtext mt-1">Олгох эм: Варфарин + Ибупрофен</p>
+                    </div>
+
+                    <div onclick="selectPrescription(2)" id="rx-2" class="rx-card p-4 bg-white hover:bg-warmcard/40 rounded-xl border-2 border-warmlight cursor-pointer transition-all">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-warmaccent text-white">Жор #8410</span>
+                            <span class="text-xs text-warmtext">Саяхан</span>
+                        </div>
+                        <h4 class="font-bold text-warmdark">Өвчтөн: Номин (4 нас)</h4>
+                        <p class="text-xs text-warmtext mt-1">Олгох эм: Азитромицин 500мг</p>
+                    </div>
+
+                    <div onclick="selectPrescription(3)" id="rx-3" class="rx-card p-4 bg-white hover:bg-warmcard/40 rounded-xl border-2 border-warmlight cursor-pointer transition-all">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-warmaccent text-white">Жор #8411</span>
+                            <span class="text-xs text-warmtext">Шинэ</span>
+                        </div>
+                        <h4 class="font-bold text-warmdark">Өвчтөн: Сүхбат (67 нас)</h4>
+                        <p class="text-xs text-warmtext mt-1">Олгох эм: Парацетамол 500мг</p>
+                    </div>
+                </div>
+
+                <!-- Баруун тал: AI Smart HUD Дэлгэц -->
+                <div class="lg:col-span-8 bg-warmdark text-white rounded-2xl p-6 shadow-xl border-4 border-warmaccent flex flex-col justify-between" id="hud-screen">
+                    <div>
+                        <!-- HUD Header -->
+                        <div class="flex justify-between items-center border-b border-white/20 pb-4 mb-6">
+                            <div class="flex items-center space-x-2">
+                                <span class="h-3 w-3 rounded-full bg-accentgreen animate-ping"></span>
+                                <span class="font-mono text-sm tracking-widest text-warmlight">PHARMA-AI REALTIME HUD</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs bg-white/10 px-2 py-1 rounded" id="hud-rx-id">Жор Сонгоогүй</span>
+                            </div>
+                        </div>
+
+                        <!-- Хоосон үеийн дэлгэц -->
+                        <div id="hud-empty" class="py-12 text-center text-warmlight/60">
+                            <span class="text-5xl block mb-4">🔍</span>
+                            Зүүн талын жоруудаас сонгож, AI комплаенсийн шууд анализыг ажиллуулна уу.
+                        </div>
+
+                        <!-- Сканнердсан үеийн өгөгдөл -->
+                        <div id="hud-content" class="hidden space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                                    <div class="text-xs text-warmlight/70 font-semibold">Өвчтөний Карт</div>
+                                    <div class="text-lg font-bold mt-1" id="hud-patient">Уншиж байна...</div>
+                                    <div class="text-xs text-warmlight mt-1" id="hud-age">Нас: --</div>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                                    <div class="text-xs text-warmlight/70 font-semibold">Бичигдсэн Эм</div>
+                                    <div class="text-lg font-bold mt-1 text-yellow-300" id="hud-medicine">Уншиж байна...</div>
+                                    <div class="text-xs text-warmlight mt-1" id="hud-dosage">Тун: --</div>
+                                </div>
+                            </div>
+
+                            <!-- Зөрчлийн шинжилгээний бүс -->
+                            <div class="p-4 rounded-xl border" id="hud-status-panel">
+                                <div class="flex items-start space-x-3">
+                                    <span class="text-2xl" id="hud-status-icon">⚠️</span>
+                                    <div>
+                                        <h4 class="font-bold uppercase tracking-wider" id="hud-status-title">Илрүүлэлт</h4>
+                                        <p class="text-sm mt-1 leading-relaxed" id="hud-status-desc">Сэрэмжлүүлэг ачаалж байна...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Системийн Санал болгох шийдэл -->
+                            <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                                <div class="text-xs text-warmlight/70 font-semibold mb-2 uppercase">AI Санал болгох шийдэл:</div>
+                                <p class="text-sm text-yellow-100" id="hud-recommendation">Тохирох зааварчилгааг бэлтгэж байна...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HUD Доод хэсэг -->
+                    <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center text-xs text-warmlight/40 font-mono">
+                        <span>Сканнердах систем: Идэвхтэй</span>
+                        <span id="hud-time">SYSTEM ONLINE</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Сонгогдсон хэсэг 3: NLP Баримт Бичгийн Аудит (Document Auditor) -->
+        <section id="tab-auditor" class="tab-content space-y-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-warmlight/40">
+                <h2 class="text-2xl font-bold text-warmdark mb-2">Үйлдвэрийн урт журмуудаас комплаенсийн зөрчлийг NLP-ээр секундийн дотор илрүүлэх нь</h2>
+                <p class="text-warmtext leading-relaxed">
+                    GMP стандарт болон хууль эрх зүйн урт бичвэрүүд, дотоод журмыг гараар шалгаж, зөрчил олно гэдэг асар их цаг авна. AI (Байгалийн хэл боловсруулалт буюу NLP) нь баримтыг уншин, алдаатай эрсдэлтэй өгүүлбэрүүдийг автоматаар улаанаар тэмдэглэдэг. Идэвхтэй өгүүлбэрүүд дээр дарж AI-ийн гаргасан зөрчлийн дүгнэлтийг харна уу.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Зүүн тал: Баримт бичгийн хэсэг -->
+                <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-warmlight">
+                    <div class="flex justify-between items-center border-b pb-3 mb-4">
+                        <span class="text-sm font-bold text-warmaccent">Дотоод журам: Сектор 4 (Чанарын хяналт)</span>
+                        <span class="text-xs bg-warmcard text-warmdark px-2 py-1 rounded">Засварлагдсан огноо: 2026/02</span>
+                    </div>
+                    
+                    <div class="space-y-4 font-serif text-warmtext leading-relaxed text-sm md:text-base">
+                        <p>
+                            4.1. Үйлдвэрлэлийн шугам бүрт гарсан температурын хэлбэлзлийг ажилтан цаас болон excel хуудсанд тэмдэглэх бөгөөд сард нэг удаа чанарын менежерт бичгээр тайлагнана.
+                        </p>
+                        
+                        <p onclick="auditDocument(1)" class="bg-red-50 hover:bg-red-100 p-2 rounded cursor-pointer border-l-4 border-accentred transition-all" id="doc-para-1">
+                            ⚠️ 4.2. Төхөөрөмжийн урсгал засвар болон шалгалт хийх зааварт зааснаар, хэрэв шаардлагатай сэлбэг олдохгүй тохиолдолд үйлдвэрлэлийн явцыг зогсоохгүйгээр өөр ижил төстэй орлуулах материалаар орлуулан ашиглаж, дараа нь бүртгэлийг нөхөж хийж болно.
+                        </p>
+                        
+                        <p>
+                            4.3. Бэлэн болсон эмийг савласны дараа тухайн багцын серийн дугаарыг төв мэдээллийн санд оруулах ба хадгалах хугацааг шошгон дээр зөв хэвлэсэн эсэхийг хянах удирдамжийг дагана.
+                        </p>
+
+                        <p onclick="auditDocument(2)" class="bg-red-50 hover:bg-red-100 p-2 rounded cursor-pointer border-l-4 border-accentred transition-all" id="doc-para-2">
+                            ⚠️ 4.4. Түүхий эд болон химийн бодисын агуулахад гаднаас орж ирэх ажилчдын нэвтрэх эрхийг гараар бүртгэж авах ба хяналтын камер унтарсан тохиолдолд харуул хамгаалалтын ажилтан бүртгэлийг орлох боломжтой байна.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Баруун тал: NLP Шинжилгээний үр дүн -->
+                <div class="lg:col-span-5 flex flex-col justify-between">
+                    <div class="bg-warmcard rounded-2xl p-6 border border-warmlight space-y-6">
+                        <div class="flex items-center space-x-2 border-b border-warmlight pb-3">
+                            <span class="text-2xl">⚡</span>
+                            <h3 class="text-md font-bold text-warmdark uppercase tracking-wider">AI NLP-ийн Аудит дүгнэлт</h3>
+                        </div>
+
+                        <!-- Эхний үеийн тайлбар -->
+                        <div id="audit-empty" class="text-center py-12 text-warmtext/60 text-sm">
+                            Зүүн талын улаан хүрээтэй, анхааруулга бүхий өгүүлбэрүүд дээр дарж AI комплаенс шинжилгээг уншина уу.
+                        </div>
+
+                        <!-- Үр дүнгүүд -->
+                        <div id="audit-result-1" class="hidden space-y-4">
+                            <div class="text-xs bg-accentred/20 text-accentred px-2 py-1 rounded inline-block font-bold">Зөрчил: GMP Хэсэг 12.1.2</div>
+                            <h4 class="font-bold text-warmdark">Үйлдвэрлэлийн материалыг нөхөж бүртгэх эрсдэл</h4>
+                            <p class="text-sm text-warmtext leading-relaxed">
+                                GMP-ийн хатуу дүрмийн дагуу үйлдвэрлэлд хэрэглэгдэж буй сэлбэг болон материалыг зөвшөөрөгдөөгүй бусад материалаар шууд орлуулах нь бүтээгдэхүүний чанарыг алдагдуулж, өвчтөний амь насанд эрсдэл учруулж болно. Бүх орлуулалт, засвар үйлчилгээний өмнө чанарын баталгаажуулалтын (QA) хяналтаар орох ёстой.
+                            </p>
+                            <div class="bg-white p-3 rounded-lg border text-xs text-warmaccent">
+                                💡 <strong>Зөвлөмж:</strong> Энэ заалтыг "Аливаа сэлбэг материалыг солихын өмнө Чанарын Хяналтын Хэлтсийн зөвшөөрлийг заавал авна" гэж өөрчлөх шаардлагатай.
+                            </div>
+                        </div>
+
+                        <div id="audit-result-2" class="hidden space-y-4">
+                            <div class="text-xs bg-accentred/20 text-accentred px-2 py-1 rounded inline-block font-bold">Зөрчил: Мэдээллийн аюулгүй байдал & Бүртгэл</div>
+                            <h4 class="font-bold text-warmdark">Нэвтрэх хяналт болон Хяналтын систем тасалдах</h4>
+                            <p class="text-sm text-warmtext leading-relaxed">
+                                Эмийн түүхий эд, химийн бодис хадгалагддаг өндөр эрсдэлтэй агуулахад нэвтрэх хэсгийн камер унтрах нь дотоод хорлон сүйтгэх ажиллагаа эсвэл химийн бодис хулгайд алдагдахад хяналтгүй болгоно. Гар бүртгэл нь амархан хуурамчаар үйлдэгдэх боломжтой.
+                            </p>
+                            <div class="bg-white p-3 rounded-lg border text-xs text-warmaccent">
+                                💡 <strong>Зөвлөмж:</strong> Хяналтын камер болон цахим нэвтрэх картын систем тасалдсан тохиолдолд агуулахыг бүрэн хааж, аюулгүй ажиллагааг гараар баталгаажуулж байж нэвтрүүлнэ.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Сонгогдсон хэсэг 4: Аналитик ба Хэмжилт (Dynamic Dashboard) -->
+        <section id="tab-analytics" class="tab-content space-y-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-warmlight/40">
+                <h2 class="text-2xl font-bold text-warmdark mb-2">Үр дүнгийн харьцуулалт ба Аналитик</h2>
+                <p class="text-warmtext leading-relaxed">
+                    Чанарын болон зардлын үзүүлэлтүүд нь комплаенсийн амжилтыг илтгэдэг. Хиймэл оюуны систем нэвтрүүлснээр гарсан эерэг өөрчлөлтүүд, зарцуулсан цаг хугацааны хэмнэлтийг доорх графикаас харах боломжтой.
+                </p>
+            </div>
+
+            <!-- Санхүүгийн интерактив тооцоолуур -->
+            <div class="bg-warmcard rounded-2xl p-6 border border-warmlight">
+                <h3 class="text-lg font-bold text-warmdark mb-4">💰 AI комплаенс хөрөнгө оруулалтын өгөөж (ROI) тооцоолуур</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-warmdark">Үйлдвэрлэдэг эмийн жилийн хэмжээ (хайрцагаар)</label>
+                        <input id="calc-volume" type="number" value="500000" oninput="calculateROI()" class="mt-1 block w-full px-3 py-2 border-warmlight bg-white focus:outline-none focus:ring-warmaccent focus:border-warmaccent sm:text-sm rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-warmdark">Гологдол эрэх дундаж зардлын алдагдал (нэгжид $)</label>
+                        <input id="calc-loss" type="number" value="15" oninput="calculateROI()" class="mt-1 block w-full px-3 py-2 border-warmlight bg-white focus:outline-none focus:ring-warmaccent focus:border-warmaccent sm:text-sm rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-warmdark">AI систем суурилуулсны үр ашиг (Илрүүлэлт %)</label>
+                        <select id="calc-efficiency" onchange="calculateROI()" class="mt-1 block w-full px-3 py-2 border-warmlight bg-white focus:outline-none focus:ring-warmaccent focus:border-warmaccent sm:text-sm rounded-md">
+                            <option value="0.95">Маш сайн (95%-ийн нарийвчлал)</option>
+                            <option value="0.99" selected>Гайхалтай (99%-ийн нарийвчлал)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-warmlight/80 flex flex-col md:flex-row justify-between items-center">
+                    <div>
+                        <h4 class="text-md font-bold text-warmdark">Жижиг алдаанаас урьдчилан сэргийлж хэмнэсэн жилийн зардал:</h4>
+                        <p class="text-xs text-warmaccent">Уламжлалт үед алддаг байсан гологдол болон торгуулийн зардлыг AI илрүүлснээр хэмнэж чадна.</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 text-3xl font-black text-accentgreen" id="roi-saved-amount">$ 111,375</div>
+                </div>
+            </div>
+
+            <!-- Графикууд -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-warmlight">
+                    <h3 class="text-lg font-bold text-warmdark mb-4 text-center">Үйлдвэрлэлийн алдаа илрүүлэлтийн хурд (секундээр)</h3>
+                    <div class="chart-container">
+                        <canvas id="speedChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-warmlight">
+                    <h3 class="text-lg font-bold text-warmdark mb-4 text-center">Туршилтаас цугларсан алдаа илрүүлэлтийн статистик</h3>
+                    <div class="chart-container">
+                        <canvas id="sessionChart"></canvas>
+                    </div>
+                    <p class="text-[11px] text-center text-warmtext/60 mt-3">Уг өгөгдөл нь таны Эмийн Үйлдвэр таб дахь симуляцийг тоглож гүйцэтгэсэн бодит үр дүнтэй шууд холбогдож шинэчлэгдэнэ.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Доод хэсэг -->
+    <footer class="bg-warmcard border-t border-warmlight py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-warmaccent text-xs font-bold uppercase tracking-widest">🛡️ PharmaAI-Compliance • 2026</p>
+            <p class="text-warmdark text-xs">Уг системийг симуляци, интерактив сургалт, технологийн харьцуулалтад ашиглахад тохиромжтой.</p>
+        </div>
+    </footer>
+
+    <!-- Логик, Симуляторын скрипт -->
+    <script>
+        // Табын удирдлага
+        function changeTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active-tab-btn'));
+
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const targetBtn = document.getElementById(`btn-${tabId}`);
+            if (targetBtn) {
+                targetBtn.classList.add('active-tab-btn');
+            }
+
+            // Графикуудыг зурах
+            setTimeout(() => {
+                if (tabId === 'analytics') {
+                    renderSpeedChart();
+                    renderSessionChart();
+                }
+            }, 100);
+        }
+
+        // ==========================================
+        // 1. Үйлдвэрийн Дамжлагын Симуляторын Код
+        // ==========================================
+        let simInterval = null;
+        let simMode = null; // 'manual' or 'ai'
+        let totalBottles = 0;
+        let defectBottles = 0;
+        let caughtDefects = 0;
+        let missedDefects = 0;
+        let activeBottles = [];
+
+        function startSim(mode) {
+            stopSim();
+            simMode = mode;
+            
+            // Оноо шинэчлэх
+            totalBottles = 0;
+            defectBottles = 0;
+            caughtDefects = 0;
+            missedDefects = 0;
+            activeBottles = [];
+            updateScoreboard();
+
+            document.getElementById('sim-status').innerText = mode === 'manual' ? 'Гар горим идэвхтэй' : 'AI камер ажиллаж байна';
+            document.getElementById('sim-status').className = `px-3 py-1 rounded-full text-xs font-bold ${mode === 'manual' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800 animate-pulse'}`;
+            document.getElementById('belt-lines').classList.remove('paused');
+
+            if (mode === 'ai') {
+                document.getElementById('ai-scanner-line').classList.remove('hidden');
+            } else {
+                document.getElementById('ai-scanner-line').classList.add('hidden');
+            }
+
+            // Шил ба лонх нэмэх давтамж
+            simInterval = setInterval(() => {
+                createBottle();
+            }, 1100);
+        }
+
+        function stopSim() {
+            clearInterval(simInterval);
+            document.getElementById('sim-status').innerText = 'Идэвхгүй';
+            document.getElementById('sim-status').className = 'px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500';
+            document.getElementById('belt-lines').classList.add('paused');
+            document.getElementById('ai-scanner-line').classList.add('hidden');
+            document.getElementById('bottles-container').innerHTML = '';
+            activeBottles = [];
+            
+            // Аналитик графикийг шинэчлэх
+            if (sessionChartInstance) {
+                sessionChartInstance.data.datasets[0].data = [caughtDefects, missedDefects];
+                sessionChartInstance.update();
+            }
+        }
+
+        function createBottle() {
+            const container = document.getElementById('bottles-container');
+            const bottleId = Date.now();
+            const isDefect = Math.random() < 0.45; // 45% нь алдаатай гарна
+            
+            totalBottles++;
+            if (isDefect) defectBottles++;
+
+            const bottle = document.createElement('div');
+            bottle.id = `bottle-${bottleId}`;
+            bottle.className = 'pill-bottle flex flex-col items-center cursor-pointer';
+            bottle.style.left = '-50px';
+
+            // Алдаатай лонхны дүрслэл
+            const emoji = isDefect ? (Math.random() < 0.5 ? '🧪' : '🛑') : '🧴';
+            const label = isDefect ? '<span class="text-[8px] bg-red-600 text-white font-bold rounded px-0.5 uppercase leading-none">GMP алдаа</span>' : '<span class="text-[8px] bg-green-700 text-white rounded px-0.5 leading-none">Зөв</span>';
+
+            bottle.innerHTML = `
+                <div class="relative flex flex-col items-center">
+                    <div class="text-3xl filter drop-shadow">${emoji}</div>
+                    <div class="absolute -top-1">${isDefect && emoji === '🧪' ? '💥' : ''}</div>
+                    ${label}
+                </div>
+            `;
+
+            container.appendChild(bottle);
+
+            const bottleState = {
+                id: bottleId,
+                element: bottle,
+                position: -50,
+                isDefect: isDefect,
+                clicked: false,
+                scanned: false
+            };
+
+            activeBottles.push(bottleState);
+
+            // Сорьцыг хөдөлгөх хөдөлгүүр
+            const moveInterval = setInterval(() => {
+                if (!document.getElementById(`bottle-${bottleId}`)) {
+                    clearInterval(moveInterval);
+                    return;
+                }
+
+                bottleState.position += 2;
+                bottle.style.left = `${bottleState.position}px`;
+
+                const containerWidth = container.offsetWidth;
+
+                // AI Сканнердах шугамны байршил (дамжлагын яг голд буюу 50%)
+                const scannerX = containerWidth / 2;
+
+                // AI горимд сканнерт өртөж буй агшин
+                if (simMode === 'ai' && !bottleState.scanned && bottleState.position >= scannerX - 15 && bottleState.position <= scannerX + 15) {
+                    bottleState.scanned = true;
+                    if (bottleState.isDefect) {
+                        bottleState.clicked = true;
+                        caughtDefects++;
+                        bottle.classList.add('neon-border-green');
+                        // Сарниулах дохио өгөх
+                        setTimeout(() => {
+                            bottle.style.opacity = '0.5';
+                            bottle.style.transform = 'translateY(-20px)';
+                        }, 100);
+                        updateScoreboard();
+                    }
+                }
+
+                // Гараар хянах горимд хэрэглэгч товших
+                bottle.onclick = () => {
+                    if (simMode === 'manual' && !bottleState.clicked && bottleState.isDefect) {
+                        bottleState.clicked = true;
+                        caughtDefects++;
+                        bottle.classList.add('neon-border-green');
+                        updateScoreboard();
+                    }
+                };
+
+                // Дэлгэцээс гарах
+                if (bottleState.position > containerWidth) {
+                    clearInterval(moveInterval);
+                    bottle.remove();
+                    
+                    if (bottleState.isDefect && !bottleState.clicked) {
+                        missedDefects++;
+                    }
+                    
+                    // Цуглуулгаас хасах
+                    activeBottles = activeBottles.filter(b => b.id !== bottleId);
+                    updateScoreboard();
+                }
+            }, 20);
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score-total').innerText = totalBottles;
+            document.getElementById('score-defects').innerText = defectBottles;
+            document.getElementById('score-caught').innerText = caughtDefects;
+            document.getElementById('score-missed').innerText = missedDefects;
+        }
+
+        // ==========================================
+        // 2. Ухаалаг Эмийн Сангийн Код
+        // ==========================================
+        const prescriptions = {
+            1: {
+                id: 'Жор #8409',
+                patient: 'Бат-Эрдэнэ (32 нас)',
+                age: '32 нас',
+                medicine: 'Варфарин (Цус шингэлэгч) + Ибупрофен (Өвчин намдаагч)',
+                dosage: 'Өдөрт 1 удаа хэрэглэнэ',
+                statusType: 'danger',
+                statusTitle: '🚨 ХОРИГЛОХ ХОСЛОЛ: ДОТООД ЦУС АЛДАХ ЭРСДЭЛ',
+                statusDesc: 'Варфарин (цус шингэлэгч) болон Ибупрофен (үрэвслийн эсрэг бэлдмэл) нарыг хамтад нь хэрэглэж болохгүй. Энэ нь ходоод гэдэсний замаар цус алдах эрсдэлийг 3-5 дахин нэмэгдүүлнэ.',
+                recommendation: 'Ибупрофеныг орлуулан ходоодны хана гэмтээхгүй Парацетамол эсвэл өөр өвчин намдаагчаар солихыг зөвлөж байна. Эмч рүү автомат санал хүсэлт илгээгдлээ.'
+            },
+            2: {
+                id: 'Жор #8410',
+                patient: 'Номин (4 нас)',
+                age: '4 нас',
+                medicine: 'Азитромицин 500мг шахмал',
+                dosage: 'Өдөрт 1 удаа уух',
+                statusType: 'warning',
+                statusTitle: '⚠️ АНХААР: ХҮҮХДЭД ТОХИРОХГҮЙ СУСПЕНЗИ САНАЛ БОЛГОХ',
+                statusDesc: '4 настай хүүхдэд 500мг шахмал хэлбэр нь хэт өндөр тунтай бөгөөд шахмалыг залгих явцад бөглөрөх эрсдэлтэй.',
+                recommendation: 'Азитромицин суспензи (шингэн) хэлбэрт хөрвүүлэн, жинд нь тааруулж уух тунгаар солих шаардлагатай.'
+            },
+            3: {
+                id: 'Жор #8411',
+                patient: 'Сүхбат (67 нас)',
+                age: '67 нас',
+                medicine: 'Парацетамол 500мг',
+                dosage: 'Өдөрт 2 удаа',
+                statusType: 'safe',
+                statusTitle: '✅ КОМПЛАЕНС ЗӨВШӨӨРӨГДӨВ',
+                statusDesc: 'Эмийн тун болон заавар аюулгүй хязгаарт байна. Насны ангилал болон бусад өвчлөлтэй зөрчилдөх зүйл илрээгүй.',
+                recommendation: 'Эмийн олголтыг зөвшөөрч, өвчтөнд хоолны дараа уух зааварчилгааг өгнө үү.'
+            }
+        };
+
+        function selectPrescription(id) {
+            document.querySelectorAll('.rx-card').forEach(el => el.classList.remove('border-warmaccent', 'bg-warmcard/60'));
+            document.getElementById(`rx-${id}`).classList.add('border-warmaccent', 'bg-warmcard/60');
+
+            document.getElementById('hud-empty').classList.add('hidden');
+            document.getElementById('hud-content').classList.remove('hidden');
+
+            const data = prescriptions[id];
+            document.getElementById('hud-rx-id').innerText = data.id;
+            document.getElementById('hud-patient').innerText = data.patient;
+            document.getElementById('hud-age').innerText = `Нас: ${data.age}`;
+            document.getElementById('hud-medicine').innerText = data.medicine;
+            document.getElementById('hud-dosage').innerText = `Тун: ${data.dosage}`;
+            document.getElementById('hud-status-title').innerText = data.statusTitle;
+            document.getElementById('hud-status-desc').innerText = data.statusDesc;
+            document.getElementById('hud-recommendation').innerText = data.recommendation;
+
+            const panel = document.getElementById('hud-status-panel');
+            panel.className = 'p-4 rounded-xl border';
+            
+            if (data.statusType === 'danger') {
+                panel.classList.add('bg-red-950/40', 'border-red-500/50', 'text-red-200');
+                document.getElementById('hud-status-icon').innerText = '🚨';
+            } else if (data.statusType === 'warning') {
+                panel.classList.add('bg-yellow-950/40', 'border-yellow-500/50', 'text-yellow-200');
+                document.getElementById('hud-status-icon').innerText = '⚠️';
+            } else {
+                panel.classList.add('bg-green-950/40', 'border-green-500/50', 'text-green-200');
+                document.getElementById('hud-status-icon').innerText = '✅';
+            }
+        }
+
+        // ==========================================
+        // 3. NLP Баримт Бичгийн Аудит
+        // ==========================================
+        function auditDocument(paraId) {
+            document.getElementById('audit-empty').classList.add('hidden');
+            document.getElementById('audit-result-1').classList.add('hidden');
+            document.getElementById('audit-result-2').classList.add('hidden');
+
+            document.querySelectorAll('.font-serif p').forEach(p => p.classList.remove('neon-border-red'));
+
+            document.getElementById(`doc-para-${paraId}`).classList.add('neon-border-red');
+            document.getElementById(`audit-result-${paraId}`).classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 4. ROI Тооцоолуур
+        // ==========================================
+        function calculateROI() {
+            const volume = parseFloat(document.getElementById('calc-volume').value) || 0;
+            const loss = parseFloat(document.getElementById('calc-loss').value) || 0;
+            const efficiency = parseFloat(document.getElementById('calc-efficiency').value) || 0.99;
+
+            // Уламжлалт аргаар дунджаар 2.5% нь алдагдал болдог байна.
+            const traditionalLoss = volume * 0.025 * loss;
+            // AI нэвтрүүлснээр энэхүү алдагдлыг сонгосон хувиар бууруулна.
+            const aiSaved = traditionalLoss * efficiency;
+
+            document.getElementById('roi-saved-amount').innerText = `$ ${Math.round(aiSaved).toLocaleString()}`;
+        }
+
+        // ==========================================
+        // 5. График Зуралт (Chart.js)
+        // ==========================================
+        let speedChartInstance = null;
+        let sessionChartInstance = null;
+
+        function renderSpeedChart() {
+            const ctx = document.getElementById('speedChart').getContext('2d');
+            if (speedChartInstance) return;
+
+            speedChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Баримт бичиг хянах', 'GMP Савлагааны аудит', 'Жорын зөрчил таних'],
+                    datasets: [
+                        {
+                            label: 'Уламжлалт арга (Гараар)',
+                            data: [14400, 360, 180], // секундээр
+                            backgroundColor: colors.light,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'AI технологиор',
+                            data: [15, 0.05, 0.2], // секундээр
+                            backgroundColor: colors.main,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'logarithmic',
+                            title: { display: true, text: 'Хурд (секунд, Лог масштаб)' },
+                            grid: { color: '#EBE6DE' }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+        }
+
+        function renderSessionChart() {
+            const ctx = document.getElementById('sessionChart').getContext('2d');
+            if (sessionChartInstance) return;
+
+            sessionChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Амжилттай барьсан алдаа', 'Алдаж дутаасан алдаа'],
+                    datasets: [{
+                        data: [caughtDefects || 1, missedDefects || 0],
+                        backgroundColor: [colors.accent, '#DDAAAA']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
